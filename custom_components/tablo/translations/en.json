@@ -88,7 +88,7 @@
   "services": {
     "watch_channel": {
       "name": "Watch channel",
-      "description": "Plays a live TV channel on one or more media players as video. Use this for Apple TVs, which only play audio from the Media panel.",
+      "description": "Plays a live TV channel on one or more media players as video. Apple TVs aren't supported; use the Tablo app on the Apple TV.",
       "fields": {
         "entity_id": {
           "name": "Media players",

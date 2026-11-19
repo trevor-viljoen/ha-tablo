@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .api import TabloError
-from .const import AUDIO_ONLY_MEDIA_SOURCE_PLATFORMS, DOMAIN
+from .const import DOMAIN, UNSUPPORTED_PLAYER_MESSAGE, UNSUPPORTED_PLAYER_PLATFORMS
 from .coordinator import TabloConfigEntry
 
 LIVE = "live"
@@ -59,12 +59,9 @@ class TabloMediaSource(MediaSource):
         live = self._entry(entry_id).runtime_data.live
         player = item.target_media_player
         reg = er.async_get(self.hass).async_get(player) if player else None
-        if reg and reg.platform in AUDIO_ONLY_MEDIA_SOURCE_PLATFORMS:
+        if reg and reg.platform in UNSUPPORTED_PLAYER_PLATFORMS:
             # Don't start a stream (and tie up a tuner) that can only fail.
-            raise Unresolvable(
-                "This player only plays audio from the Media panel. Use the "
-                "tablo.watch_channel action (or a dashboard button) to watch live TV on it."
-            )
+            raise Unresolvable(UNSUPPORTED_PLAYER_MESSAGE)
         try:
             channel = await live.async_channel(object_id)
             if channel is None:

@@ -19,6 +19,10 @@ MAX_SESSION_AGE = timedelta(hours=8)
 SERVICE_WATCH_CHANNEL = "watch_channel"
 ATTR_CHANNEL = "channel"
 ATTR_CONFIG_ENTRY_ID = "config_entry_id"
-# Players whose Media panel playback is audio-only (AirPlay audio/RAOP), so live
-# TV has to be sent to them with the watch_channel action instead.
-AUDIO_ONLY_MEDIA_SOURCE_PLATFORMS = frozenset({"apple_tv"})
+# Players Home Assistant can't send live TV video to. Apple TV: the Media panel
+# plays items as AirPlay audio only, and on tvOS 26+ AirPlay "play URL" opens
+# the player but never loads the stream. Refuse early instead of tying up a tuner.
+UNSUPPORTED_PLAYER_PLATFORMS = frozenset({"apple_tv"})
+UNSUPPORTED_PLAYER_MESSAGE = (
+    "Home Assistant can't play live TV on an Apple TV; open the Tablo app on the Apple TV instead"
+)

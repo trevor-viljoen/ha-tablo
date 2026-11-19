@@ -9,9 +9,17 @@ from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
 
 from .api import TabloError
-from .const import ATTR_CHANNEL, ATTR_CONFIG_ENTRY_ID, DOMAIN, SERVICE_WATCH_CHANNEL
+from .const import (
+    ATTR_CHANNEL,
+    ATTR_CONFIG_ENTRY_ID,
+    DOMAIN,
+    SERVICE_WATCH_CHANNEL,
+    UNSUPPORTED_PLAYER_MESSAGE,
+    UNSUPPORTED_PLAYER_PLATFORMS,
+)
 from .coordinator import TabloConfigEntry
 
 WATCH_SCHEMA = vol.Schema(
@@ -37,6 +45,11 @@ def _entry(hass: HomeAssistant, entry_id: str | None) -> TabloConfigEntry:
 
 
 async def _async_watch(call: ServiceCall) -> None:
+    registry = er.async_get(call.hass)
+    for player in call.data[ATTR_ENTITY_ID]:
+        reg = registry.async_get(player)
+        if reg and reg.platform in UNSUPPORTED_PLAYER_PLATFORMS:
+            raise ServiceValidationError(f"{player}: {UNSUPPORTED_PLAYER_MESSAGE}")
     live = _entry(call.hass, call.data.get(ATTR_CONFIG_ENTRY_ID)).runtime_data.live
     query = call.data.get(ATTR_CHANNEL) or live.selected
     if not query:

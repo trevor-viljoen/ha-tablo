@@ -22,16 +22,18 @@ Polls every 60 seconds.
 
 ## Live TV
 
-The Tablo streams MPEG-2, which Apple TV, browsers and Chromecast can't decode. To play on those, run [tablo-web](https://github.com/trevor-viljoen/tablo-web) and set its URL under **Settings → Devices & services → Tablo → Configure**. Streams then go through tablo-web and are transcoded to H.264. A stream takes about 10 seconds to start.
+The Tablo streams MPEG-2, which browsers and Chromecast can't decode. To play on those, run [tablo-web](https://github.com/trevor-viljoen/tablo-web) and set its URL under **Settings → Devices & services → Tablo → Configure**. Streams then go through tablo-web and are transcoded to H.264. A stream takes about 10 seconds to start.
 
 **Media panel:** channels show up under **Media → Tablo**. Pick a player at the bottom of the panel, then a channel. This works for browsers and most players.
 
-**Apple TV:** Home Assistant's Apple TV integration plays anything picked in the Media panel as audio only, so use the `tablo.watch_channel` action instead. The Media panel shows an error pointing there if you pick an Apple TV.
+**Apple TV:** not supported. Home Assistant's Apple TV integration plays Media panel items as audio only. On tvOS 26 and later, sending a stream URL over AirPlay opens the Apple TV's player but it never loads the stream. Use the Tablo app on the Apple TV. The integration refuses Apple TV targets rather than tying up a tuner.
+
+**Other players** (browsers, Chromecast, Kodi and so on) can also be targeted with the `tablo.watch_channel` action:
 
 ```yaml
 action: tablo.watch_channel
 data:
-  entity_id: media_player.bedroom_apple_tv
+  entity_id: media_player.living_room_chromecast
   channel: "5.1"   # number, call sign, or name; omit to use the channel picker
 ```
 

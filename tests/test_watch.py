@@ -261,9 +261,23 @@ async def test_media_panel_refuses_apple_tv(
     reg = er.async_get(hass).async_get_or_create(
         "media_player", "apple_tv", "atv-1", suggested_object_id="bedroom"
     )
-    with pytest.raises(Unresolvable, match="watch_channel"):
+    with pytest.raises(Unresolvable, match="Tablo app"):
         await media_source.async_resolve_media(
             hass, f"media-source://{DOMAIN}/{entry.entry_id}/live/11", reg.entity_id
         )
     assert entry.runtime_data.live.sessions == {}
     assert not any(c[0] == "POST" and "/api/stream" in str(c[1]) for c in aioclient_mock.mock_calls)
+
+
+async def test_watch_refuses_apple_tv(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    entry = await setup(hass, aioclient_mock)
+    reg = er.async_get(hass).async_get_or_create(
+        "media_player", "apple_tv", "atv-2", suggested_object_id="den"
+    )
+    with pytest.raises(ServiceValidationError, match="Tablo app"):
+        await hass.services.async_call(
+            DOMAIN, "watch_channel", {"entity_id": reg.entity_id, "channel": "2.1"}, blocking=True
+        )
+    assert entry.runtime_data.live.sessions == {}
