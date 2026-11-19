@@ -36,3 +36,20 @@ Then go to **Settings → Devices & services → Add integration → Tablo** and
 
 - Media source: browse channels and recordings, and play them on a media player
 - Recording management services (schedule, delete)
+
+---
+
+## Support & Donations
+
+If you find this project useful and would like to support its development, you can buy me a coffee!
+
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/trevorviljoen)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsors-EA4AAA?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/trevor-viljoen)
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+> Tablo and the Tablo logo are trademarks of Nuvyyo Inc. This project is not affiliated with or endorsed by Nuvyyo.
