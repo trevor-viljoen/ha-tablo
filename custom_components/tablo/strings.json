@@ -1,0 +1,42 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tablo",
+        "description": "Enter the local address of your Tablo 4th Gen DVR. No Tablo account login is needed.",
+        "data": {
+          "host": "Host",
+          "port": "Port"
+        },
+        "data_description": {
+          "host": "IP address of the Tablo, e.g. 192.168.1.50",
+          "port": "Local API port (8887 on 4th Gen)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the Tablo.",
+      "invalid_auth": "The Tablo rejected the request signature."
+    },
+    "abort": {
+      "already_configured": "This Tablo is already configured."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "recording": { "name": "Recording" }
+    },
+    "calendar": {
+      "scheduled_recordings": { "name": "Scheduled recordings" }
+    },
+    "sensor": {
+      "tuners_in_use": { "name": "Tuners in use" },
+      "recordings": { "name": "Recordings" },
+      "scheduled_recordings": { "name": "Scheduled recordings" },
+      "next_recording": { "name": "Next recording" },
+      "storage_free": { "name": "Storage free" },
+      "storage_used_percent": { "name": "Storage used" },
+      "storage_size": { "name": "Storage size" }
+    }
+  }
+}
