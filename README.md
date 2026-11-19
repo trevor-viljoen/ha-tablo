@@ -15,8 +15,25 @@ It talks to the Tablo's local API only. Requests are HMAC-signed with the same s
 | `sensor.<name>_next_recording` | Start time of the next scheduled recording (attributes: title, episode, channel) |
 | `sensor.<name>_storage_free` / `_storage_used` / `_storage_size` | Storage stats |
 | `calendar.<name>_scheduled_recordings` | Upcoming scheduled recordings as calendar events |
+| `button.<name>_stop_live_tv` | Stops every live TV stream this integration started |
 
 Polls every 60 seconds.
+
+## Live TV
+
+Channels show up in the **Media** panel under **Tablo**. Pick a player at the bottom of the panel, then a channel.
+
+The Tablo streams MPEG-2, which Apple TV, browsers and Chromecast can't decode. To play on those, run [tablo-web](https://github.com/trevor-viljoen/tablo-web) and set its URL under **Settings → Devices & services → Tablo → Configure**. Streams then go through tablo-web and are transcoded to H.264. A stream takes about 10 seconds to start.
+
+The integration stops each transcoded stream it started when:
+
+- the player turns off or goes idle;
+- the player stays paused for 10 minutes;
+- you play another channel on the same player;
+- the stream has been running for 8 hours;
+- you press **Stop live TV**.
+
+Without a tablo-web URL, players get the Tablo's raw MPEG-2 stream.
 
 ## Install
 
@@ -34,7 +51,7 @@ Then go to **Settings → Devices & services → Add integration → Tablo** and
 
 ## Roadmap
 
-- Media source: browse channels and recordings, and play them on a media player
+- Play recordings from the media source
 - Recording management services (schedule, delete)
 
 ---

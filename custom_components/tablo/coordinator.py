@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import TabloError, TabloLocalClient
 from .const import DOMAIN, MAX_SCHEDULED, SCAN_INTERVAL
+from .live import LiveTV
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -121,6 +122,7 @@ class TabloCoordinator(DataUpdateCoordinator[TabloData]):
             update_interval=SCAN_INTERVAL,
         )
         self.client = client
+        self.live: LiveTV
 
     async def _async_update_data(self) -> TabloData:
         try:

@@ -24,19 +24,60 @@
   },
   "entity": {
     "binary_sensor": {
-      "recording": { "name": "Recording" }
+      "recording": {
+        "name": "Recording"
+      }
     },
     "calendar": {
-      "scheduled_recordings": { "name": "Scheduled recordings" }
+      "scheduled_recordings": {
+        "name": "Scheduled recordings"
+      }
     },
     "sensor": {
-      "tuners_in_use": { "name": "Tuners in use" },
-      "recordings": { "name": "Recordings" },
-      "scheduled_recordings": { "name": "Scheduled recordings" },
-      "next_recording": { "name": "Next recording" },
-      "storage_free": { "name": "Storage free" },
-      "storage_used_percent": { "name": "Storage used" },
-      "storage_size": { "name": "Storage size" }
+      "tuners_in_use": {
+        "name": "Tuners in use"
+      },
+      "recordings": {
+        "name": "Recordings"
+      },
+      "scheduled_recordings": {
+        "name": "Scheduled recordings"
+      },
+      "next_recording": {
+        "name": "Next recording"
+      },
+      "storage_free": {
+        "name": "Storage free"
+      },
+      "storage_used_percent": {
+        "name": "Storage used"
+      },
+      "storage_size": {
+        "name": "Storage size"
+      }
+    },
+    "button": {
+      "stop_live_tv": {
+        "name": "Stop live TV"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Live TV",
+        "description": "To play live TV on players that can't decode MPEG-2 (Apple TV, browsers, Chromecast), enter the URL of a tablo-web server to transcode streams to H.264. Leave empty to send the Tablo's raw stream.",
+        "data": {
+          "transcode_url": "tablo-web URL"
+        },
+        "data_description": {
+          "transcode_url": "For example http://192.168.1.60:7070"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach tablo-web at that URL.",
+      "transcoder_not_logged_in": "tablo-web is running but isn't logged in to a Tablo."
     }
   }
 }

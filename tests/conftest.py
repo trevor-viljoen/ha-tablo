@@ -78,14 +78,53 @@ def airing(start: datetime, minutes: int = 60, episode: str | None = "Pilot") ->
     }
 
 
+def channel_obj(object_id: int, ident: str, sign: str, major: int, minor: int, **kw) -> dict:
+    return {
+        "object_id": object_id,
+        "path": f"/guide/channels/{object_id}",
+        "channel": {
+            "call_sign": sign,
+            "major": major,
+            "minor": minor,
+            "network": kw.get("network", ""),
+            "channel_identifier": ident,
+            "logos": kw.get("logos", []),
+        },
+    }
+
+
+CHANNELS: dict[str, dict[str, Any]] = {
+    "/guide/channels/12": channel_obj(12, "S1_007_01", "WAAA", 7, 1, network="ABC"),
+    "/guide/channels/11": channel_obj(
+        11,
+        "S2_002_01",
+        "WXYZ",
+        2,
+        1,
+        network="TEST",
+        logos=[{"kind": "lightLarge", "url": "https://example.com/logo.png"}],
+    ),
+    "/guide/channels/13": channel_obj(13, "S3_002_02", "Movies Plus", 2, 2),
+    "/guide/channels/bad": {"object_id": 99, "channel": {"call_sign": "NOID"}},
+}
+
+TRANSCODER = "http://192.0.2.20:7070"
+
+
 def mock_device(
     aioclient_mock: AiohttpClientMocker,
     *,
     recording: bool = False,
     scheduled: dict[str, dict[str, Any]] | None = None,
+    channels: dict[str, dict[str, Any]] | None = None,
 ) -> None:
-    """Register mocked responses for every endpoint the coordinator polls."""
+    """Register mocked responses for every endpoint the integration calls.
+
+    The mocked /batch returns both scheduled airings and channel objects; each
+    parser ignores objects of the other kind.
+    """
     scheduled = scheduled or {}
+    channels = CHANNELS if channels is None else channels
     aioclient_mock.get(f"{BASE}/server/info", json=server_info())
     aioclient_mock.get(f"{BASE}/server/tuners", json=tuners(recording))
     aioclient_mock.get(f"{BASE}/server/harddrives", json=harddrives())
@@ -94,7 +133,8 @@ def mock_device(
         json=[f"/recordings/series/episodes/{i}" for i in range(3)],
     )
     aioclient_mock.get(f"{BASE}/guide/airings", json=list(scheduled))
-    aioclient_mock.post(f"{BASE}/batch", json=scheduled)
+    aioclient_mock.get(f"{BASE}/guide/channels", json=list(channels))
+    aioclient_mock.post(f"{BASE}/batch", json={**scheduled, **channels})
 
 
 @pytest.fixture
