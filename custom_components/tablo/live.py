@@ -171,7 +171,16 @@ class LiveTV:
                 blocking=True,
             )
         except Exception as err:
-            _LOGGER.warning("%s could not play live TV: %s", player, err)
+            causes, cause = [], err.__cause__
+            while cause is not None and len(causes) < 3:
+                causes.append(f"{type(cause).__name__}: {cause}")
+                cause = cause.__cause__
+            _LOGGER.warning(
+                "%s could not play live TV: %s%s",
+                player,
+                err,
+                f" ({'; '.join(causes)})" if causes else "",
+            )
             if session_id is not None:
                 await self.async_stop(session_id)
 

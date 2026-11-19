@@ -156,14 +156,14 @@ async def test_watch_player_failure_stops_stream(
     entry = await setup(hass, aioclient_mock)
 
     async def fail(call: ServiceCall) -> None:
-        raise HomeAssistantError("player said no")
+        raise HomeAssistantError("player said no") from ValueError("got error -1 (TEST)")
 
     hass.services.async_register("media_player", "play_media", fail)
     await watch(hass, channel="2.1")  # returns once the stream is handed off
     await hass.async_block_till_done()
     assert entry.runtime_data.live.sessions == {}
     assert deletes(aioclient_mock) == [f"{TRANSCODER}/api/stream/s1"]
-    assert "could not play live TV: player said no" in caplog.text
+    assert "could not play live TV: player said no (ValueError: got error -1 (TEST))" in caplog.text
 
 
 async def test_old_handoff_failing_keeps_new_stream(
