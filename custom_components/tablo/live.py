@@ -146,8 +146,19 @@ class LiveTV:
             return url
 
     async def async_watch(self, channel: TabloChannel, player: str) -> None:
-        """Start ``channel`` and send it to ``player`` as video."""
+        """Start ``channel`` and send it to ``player`` as video.
+
+        Returns once the stream is ready and has been handed to the player.
+        Some players (Apple TV via pyatv) only return from play_media when the
+        video ends, so the hand-off runs in the background.
+        """
         url = await self.async_play_url(channel, player)
+        session_id = next((s.session_id for s in self.sessions.values() if s.url == url), None)
+        self.hass.async_create_background_task(
+            self._async_send(player, url, session_id), f"tablo live TV on {player}"
+        )
+
+    async def _async_send(self, player: str, url: str, session_id: str | None) -> None:
         try:
             await self.hass.services.async_call(
                 MP_DOMAIN,
@@ -159,9 +170,10 @@ class LiveTV:
                 },
                 blocking=True,
             )
-        except Exception:
-            await self.async_stop_player(player)
-            raise
+        except Exception as err:
+            _LOGGER.warning("%s could not play live TV: %s", player, err)
+            if session_id is not None:
+                await self.async_stop(session_id)
 
     @callback
     def _on_grace_end(self, session_id: str, _now: datetime) -> None:

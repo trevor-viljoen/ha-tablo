@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+from dataclasses import replace
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -149,7 +151,7 @@ async def test_watch_errors(hass: HomeAssistant, aioclient_mock: AiohttpClientMo
 
 
 async def test_watch_player_failure_stops_stream(
-    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, caplog: pytest.LogCaptureFixture
 ) -> None:
     entry = await setup(hass, aioclient_mock)
 
@@ -157,10 +159,50 @@ async def test_watch_player_failure_stops_stream(
         raise HomeAssistantError("player said no")
 
     hass.services.async_register("media_player", "play_media", fail)
-    with pytest.raises(HomeAssistantError, match="player said no"):
-        await watch(hass, channel="2.1")
+    await watch(hass, channel="2.1")  # returns once the stream is handed off
+    await hass.async_block_till_done()
     assert entry.runtime_data.live.sessions == {}
     assert deletes(aioclient_mock) == [f"{TRANSCODER}/api/stream/s1"]
+    assert "could not play live TV: player said no" in caplog.text
+
+
+async def test_old_handoff_failing_keeps_new_stream(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A replaced stream's play_media erroring must not stop the new stream."""
+    entry = await setup(hass, aioclient_mock)
+    live = entry.runtime_data.live
+    gate = asyncio.Event()
+
+    async def slow_then_fail(call: ServiceCall) -> None:
+        await gate.wait()
+        raise HomeAssistantError("replaced")
+
+    hass.services.async_register("media_player", "play_media", slow_then_fail)
+    await watch(hass, channel="2.1")
+    first = next(iter(live.sessions.values()))
+    await live.async_stop(first.session_id)
+    live.sessions["s2"] = replace(first, session_id="s2")  # a newer stream on the player
+    gate.set()
+    await hass.async_block_till_done()
+    assert "s2" in live.sessions
+
+
+async def test_watch_without_transcoder(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    await setup(hass, aioclient_mock, transcode=False)
+    aioclient_mock.post(
+        "http://192.0.2.10:8887/guide/channels/11/watch",
+        json={"playlist_url": "http://192.0.2.10/pl.m3u8"},
+    )
+
+    async def fail(call: ServiceCall) -> None:
+        raise HomeAssistantError("nope")
+
+    hass.services.async_register("media_player", "play_media", fail)
+    await watch(hass, channel="2.1")
+    await hass.async_block_till_done()  # nothing to stop, must not raise
 
 
 # --------------------------------------------------------- start watchdog
