@@ -16,20 +16,33 @@ It talks to the Tablo's local API only. Requests are HMAC-signed with the same s
 | `sensor.<name>_storage_free` / `_storage_used` / `_storage_size` | Storage stats |
 | `calendar.<name>_scheduled_recordings` | Upcoming scheduled recordings as calendar events |
 | `button.<name>_stop_live_tv` | Stops every live TV stream this integration started |
+| `select.<name>_live_tv_channel` | Channel picker used by `tablo.watch_channel` when no channel is given |
 
 Polls every 60 seconds.
 
 ## Live TV
 
-Channels show up in the **Media** panel under **Tablo**. Pick a player at the bottom of the panel, then a channel.
-
 The Tablo streams MPEG-2, which Apple TV, browsers and Chromecast can't decode. To play on those, run [tablo-web](https://github.com/trevor-viljoen/tablo-web) and set its URL under **Settings → Devices & services → Tablo → Configure**. Streams then go through tablo-web and are transcoded to H.264. A stream takes about 10 seconds to start.
+
+**Media panel:** channels show up under **Media → Tablo**. Pick a player at the bottom of the panel, then a channel. This works for browsers and most players.
+
+**Apple TV:** Home Assistant's Apple TV integration plays anything picked in the Media panel as audio only, so use the `tablo.watch_channel` action instead. The Media panel shows an error pointing there if you pick an Apple TV.
+
+```yaml
+action: tablo.watch_channel
+data:
+  entity_id: media_player.bedroom_apple_tv
+  channel: "5.1"   # number, call sign, or name; omit to use the channel picker
+```
+
+A dashboard button for each TV only needs `entity_id`. Pair it with the **Live TV channel** picker.
 
 The integration stops each transcoded stream it started when:
 
+- the player doesn't start playing within 45 seconds;
 - the player turns off or goes idle;
 - the player stays paused for 10 minutes;
-- you play another channel on the same player;
+- you play another channel on the same player (there is one stream per player, so double taps are safe);
 - the stream has been running for 8 hours;
 - you press **Stop live TV**.
 

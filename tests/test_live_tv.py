@@ -148,7 +148,8 @@ async def test_browse_unknown_entry(
 async def test_browse_channels_error(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    await setup(hass, aioclient_mock)
+    entry = await setup(hass, aioclient_mock)
+    entry.runtime_data.live._channels_at = None  # force a refetch
     with (
         patch(
             "custom_components.tablo.api.TabloLocalClient.channels",
@@ -273,8 +274,10 @@ async def test_stops_when_player_stops(
     await hass.async_block_till_done()
     assert "s1" in entry.runtime_data.live.sessions
 
-    freezer.tick(START_GRACE + timedelta(seconds=1))
     hass.states.async_set(PLAYER, "playing")
+    await hass.async_block_till_done()
+    freezer.tick(START_GRACE + timedelta(seconds=1))
+    async_fire_time_changed(hass)  # start watchdog sees it playing
     await hass.async_block_till_done()
     assert "s1" in entry.runtime_data.live.sessions
 

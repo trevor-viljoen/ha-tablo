@@ -1,0 +1,16 @@
+watch_channel:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          domain: media_player
+          multiple: true
+    channel:
+      example: "5.1"
+      selector:
+        text:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: tablo

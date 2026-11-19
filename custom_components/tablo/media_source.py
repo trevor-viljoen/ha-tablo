@@ -12,9 +12,10 @@ from homeassistant.components.media_source import (
 )
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .api import TabloError
-from .const import DOMAIN
+from .const import AUDIO_ONLY_MEDIA_SOURCE_PLATFORMS, DOMAIN
 from .coordinator import TabloConfigEntry
 
 LIVE = "live"
@@ -56,11 +57,19 @@ class TabloMediaSource(MediaSource):
         if kind != LIVE:
             raise Unresolvable(f"Unknown Tablo item {item.identifier}")
         live = self._entry(entry_id).runtime_data.live
+        player = item.target_media_player
+        reg = er.async_get(self.hass).async_get(player) if player else None
+        if reg and reg.platform in AUDIO_ONLY_MEDIA_SOURCE_PLATFORMS:
+            # Don't start a stream (and tie up a tuner) that can only fail.
+            raise Unresolvable(
+                "This player only plays audio from the Media panel. Use the "
+                "tablo.watch_channel action (or a dashboard button) to watch live TV on it."
+            )
         try:
             channel = await live.async_channel(object_id)
             if channel is None:
                 raise Unresolvable(f"Channel {object_id} not found")
-            url = await live.async_play_url(channel, item.target_media_player)
+            url = await live.async_play_url(channel, player)
         except TabloError as err:
             raise Unresolvable(f"Could not start {object_id}: {err}") from err
         return PlayMedia(url, HLS)

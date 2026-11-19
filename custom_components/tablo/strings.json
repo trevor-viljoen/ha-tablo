@@ -60,6 +60,11 @@
       "stop_live_tv": {
         "name": "Stop live TV"
       }
+    },
+    "select": {
+      "live_tv_channel": {
+        "name": "Live TV channel"
+      }
     }
   },
   "options": {
@@ -78,6 +83,26 @@
     "error": {
       "cannot_connect": "Could not reach tablo-web at that URL.",
       "transcoder_not_logged_in": "tablo-web is running but isn't logged in to a Tablo."
+    }
+  },
+  "services": {
+    "watch_channel": {
+      "name": "Watch channel",
+      "description": "Plays a live TV channel on one or more media players as video. Use this for Apple TVs, which only play audio from the Media panel.",
+      "fields": {
+        "entity_id": {
+          "name": "Media players",
+          "description": "Where to play the channel."
+        },
+        "channel": {
+          "name": "Channel",
+          "description": "Channel number (5.1), call sign (KOCO) or the full name shown in the channel picker. Defaults to the Live TV channel picker."
+        },
+        "config_entry_id": {
+          "name": "Tablo",
+          "description": "Which Tablo to use. Only needed if you have more than one."
+        }
+      }
     }
   }
 }

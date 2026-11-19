@@ -66,8 +66,9 @@ async def test_idle_state(
     assert float(hass.states.get("sensor.test_tablo_storage_used").state) == 70.0
     assert hass.states.get("calendar.test_tablo_scheduled_recordings").state == STATE_OFF
 
-    # The batch endpoint isn't called when nothing is scheduled.
-    assert not any(c[1].path == "/batch" for c in aioclient_mock.mock_calls)
+    # Batch is only used for the channel lineup when nothing is scheduled.
+    batches = [str(c[2]) for c in aioclient_mock.mock_calls if c[1].path == "/batch"]
+    assert batches and all("/guide/series" not in b for b in batches)
 
 
 async def test_device_info(

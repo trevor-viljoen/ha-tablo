@@ -10,6 +10,7 @@ import asyncio
 import hashlib
 import hmac
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import format_datetime
@@ -241,11 +242,22 @@ class TabloWebClient:
         """Stop a stream and free its Tablo tuner."""
         await self._call("DELETE", f"/api/stream/{session_id}")
 
-    async def wait_ready(self, playlist_url: str, timeout: float = 30) -> None:
-        """Wait until the transcoder has written its first segment."""
+    async def wait_ready(
+        self,
+        playlist_url: str,
+        timeout: float = 30,
+        still_wanted: Callable[[], bool] | None = None,
+    ) -> None:
+        """Wait until the transcoder has written its first segment.
+
+        ``still_wanted`` lets the caller abort early if the session was stopped
+        while we were waiting.
+        """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         while True:
+            if still_wanted is not None and not still_wanted():
+                raise TabloWebError("The stream was stopped before it started")
             try:
                 async with self._session.get(playlist_url) as resp:
                     if resp.status == 200 and ".ts" in await resp.text():
